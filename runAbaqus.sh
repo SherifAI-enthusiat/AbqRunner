@@ -17,7 +17,6 @@ module add abaqus
 # import glob
 # files = glob.glob("InpFiles/*.inp")
 # EOF
-# rm -r /nobackup/mnsaz/Mengoni_tool/workspace/temp-$SGE_TASK_ID
 export LM_LICENSE_FILE=27004@abaqus-server1.leeds.ac.uk:$LM_LICENSE_FILE
 param=$(sed -n -e "$SGE_TASK_ID p" param_values.csv)
 export FileName='TestJob-2.inp'
@@ -38,4 +37,3 @@ os.chdir(basePath)
 commandn = r'%s -- "%s"'%(command,workspacePath)
 pCall2 = subprocess.run(commandn, shell= True)
 EOF
-rm -r /nobackup/mnsaz/Mengoni_tool/workspace/temp-$SGE_TASK_ID
