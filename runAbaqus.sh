@@ -20,9 +20,10 @@ EOF
 rm -r /nobackup/mnsaz/Mengoni_tool/workspace/temp-$SGE_TASK_ID
 export LM_LICENSE_FILE=27004@abaqus-server1.leeds.ac.uk:$LM_LICENSE_FILE
 infile=$(sed -n -e "$SGE_TASK_ID p" param_values.ascii)
-export FileName='K1_int_sop2_2'
-mkdir -p /nobackup/mnsaz/AbqRunner/workspace/temp-$SGE_TASK_ID 
-python write2InpFile.py $FileName $SGE_TASK_ID $infile
+export FileName='TestJob-2.inp'
+temp = /nobackup/mnsaz/AbqRunner/workspace/temp-$SGE_TASK_ID 
+mkdir -p "$temp"
+python write2InpFile.py $infile $SGE_TASK_ID $temp $FileName
 cd workspace/temp-$SGE_TASK_ID
 abaqus memory='20000mb' cpus='4' input="${FileName}.inp" job=$FileName mp_mode=threads
 # python <<-EOF
