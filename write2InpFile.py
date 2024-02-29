@@ -44,8 +44,6 @@ def writeInp(x,orifile,workspacePath,inpName):
                 file2write.write(item)
     return workspaceInp
 
-x = sys.argv(1)
-orifile = sys.argv(2)
-workspacePath = sys.argv(3)
-inpName = sys.argv(4)
+x = sys.argv(1); orifile = sys.argv(2)
+workspacePath = sys.argv(3); inpName = sys.argv(4)
 writeInp(x,orifile,workspacePath,inpName)
