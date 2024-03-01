@@ -13,16 +13,12 @@ unset GOMP_CPU_AFFINITY KMP_AFFINIT
 module load anaconda
 source activate base
 module add abaqus
-# python <<-EOF
-# import glob
-# files = glob.glob("InpFiles/*.inp")
-# EOF
 export LM_LICENSE_FILE=27004@abaqus-server1.leeds.ac.uk:$LM_LICENSE_FILE
 param=$(sed -n -e "$SGE_TASK_ID p" param_values.csv)
 export FileName='TestJob-2.inp'
-workspacePath = /nobackup/mnsaz/AbqRunner/workspace/temp-$SGE_TASK_ID 
-mkdir -p "$temp"
-inpPath=$(python write2InpFile.py $param $SGE_TASK_ID $workspacePath $FileName)
+workspacePath=/nobackup/mnsaz/AbqRunner/workspace/temp-$SGE_TASK_ID 
+mkdir -p $workspacePath
+inpPath=$(python write2InpFile.py "$param" "$SGE_TASK_ID" "$workspacePath" "$FileName")
 cd workspace/temp-$SGE_TASK_ID
 abaqus memory='20000mb' cpus='4' input="$inpPath" job="PCKnee" mp_mode=threads
 
