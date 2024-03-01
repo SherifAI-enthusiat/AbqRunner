@@ -27,10 +27,13 @@ abaqus memory='20000mb' cpus="$NSLOTS" input="$inpPath" job="PCKnee" mp_mode=thr
 python <<-EOF
 import os
 import subprocess
+import HelperFunc
 absPath = os.path.dirname(__file__)
-dataRet = os.path.join(absPath,"dataRetrieval.py")
-command = 'abaqus python "%s"'%dataRet
-os.chdir(absPath)
-commandn = r'%s -- "%s"'%(command,workspacePath)
-pCall2 = subprocess.run(commandn, shell= True)
+staFile = os.path.join($workspacePath,"PCKnee.sta")
+if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+    dataRet = os.path.join(absPath,"dataRetrieval.py")
+    command = 'abaqus python "%s"'%dataRet
+    os.chdir(absPath)
+    commandn = r'%s -- "%s"'%(command,workspacePath)
+    pCall2 = subprocess.run(commandn, shell= True)
 EOF
