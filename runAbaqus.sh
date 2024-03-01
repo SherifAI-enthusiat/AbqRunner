@@ -18,10 +18,9 @@ param=$(sed -n -e "$SGE_TASK_ID p" param_values.csv)
 export FileName='TestJob-2.inp'
 workspacePath=/nobackup/mnsaz/AbqRunner/workspace/temp-$SGE_TASK_ID 
 mkdir -p $workspacePath
-inpPath=$(python write2InpFile.py "$param" "$SGE_TASK_ID" "$workspacePath" "$FileName")
+inpPath=$(python write2InpFile.py "$param" "$FileName" "$workspacePath" "$FileName")
 cd workspace/temp-$SGE_TASK_ID
 abaqus memory='20000mb' cpus='4' input="$inpPath" job="PCKnee" mp_mode=threads
-
 # This will be used to read the output and store to file
 python <<-EOF
 import os
