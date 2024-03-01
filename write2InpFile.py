@@ -1,7 +1,7 @@
 import os,sys
 def writeInp(x,orifile,workspacePath,inpName):
     paramToOpti = list()
-    for arg in range(len(x)):
+    for arg in range(len(x)-1):
         paramToOpti.append(float(x[arg]))
 
     workspaceInp = os.path.join(workspacePath,inpName)
@@ -44,6 +44,6 @@ def writeInp(x,orifile,workspacePath,inpName):
                 file2write.write(item)
     return workspaceInp
 
-x = sys.argv[1]; orifile = sys.argv[2]
+x = sys.argv[1]; orifile = sys.argv[2]; x.split(',')
 workspacePath = sys.argv[3]; inpName = sys.argv[4]
 writeInp(x,orifile,workspacePath,inpName)
