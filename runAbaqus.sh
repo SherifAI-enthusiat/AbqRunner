@@ -6,9 +6,9 @@
 #$ -pe smp 4
 #$ -l h_vmem=4G
 # specify a task array of 1500 tasks
-#$ -t 1-3780:8
+#$ -t 1-3780:378
 # limit of 13 tasks at one time to constrain license token use to 156 token (12*13)
-#$ -tc 6
+#$ -tc 8
 unset GOMP_CPU_AFFINITY KMP_AFFINIT
 module load anaconda
 source activate base
@@ -25,7 +25,7 @@ cd workspace/temp-$SGE_TASK_ID
 abaqus memory='20000mb' cpus="$NSLOTS" input="$inpPath" job="PCKnee" mp_mode=threads int
 # This will be used to read the output and store to file
 python <<-EOF
-import os
+import os  ###-3780:8 
 import subprocess
 import HelperFunc
 absPath = os.path.dirname(__file__)
@@ -37,3 +37,6 @@ if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFUL
     commandn = r'%s -- "%s"'%(command,workspacePath)
     pCall2 = subprocess.run(commandn, shell= True)
 EOF
+cd /nobackup/mnsaz/AbqRunner
+mv runAbaqus.sh.e* runAbaqus.sh.o* temp/
+

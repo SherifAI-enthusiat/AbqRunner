@@ -2,7 +2,8 @@ import os,sys
 def writeInp(x,orifile,workspacePath,inpName):
     paramToOpti = list()
     for arg in range(len(x)-1):
-        paramToOpti.append(float(x[arg]))
+        xnew = x[arg].strip('[')
+       	paramToOpti.append(float(xnew))
 
     workspaceInp = os.path.join(workspacePath,inpName)
     with open(orifile,'r') as oldlines:
