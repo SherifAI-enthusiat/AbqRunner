@@ -25,19 +25,19 @@ cd workspace/temp-$SGE_TASK_ID
 abaqus memory='20000mb' cpus="$NSLOTS" input="$inpPath" job="PCKnee" mp_mode=threads int
 # This will be used to read the output and store to file
 python <<-EOF
-import os  ###-3780:8 
-import subprocess
-import HelperFunc as Hp
-Hp.disply("1. All Modules loaded!\n")
-absPath = os.path.dirname(__file__)
-staFile = os.path.join($workspacePath,"PCKnee.sta")
-if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
-    Hp.disply("2. Passed if statement!\n")
-    dataRet = os.path.join(absPath,"dataRetrieval.py")
-    command = 'abaqus python "%s"'%dataRet
-    os.chdir(absPath)
-    commandn = r'%s -- "%s"'%(command,workspacePath)
-    pCall2 = subprocess.run(commandn, shell= True)
+    import os  ###-3780:8 
+    import subprocess
+    import HelperFunc as Hp
+    Hp.disply("1. All Modules loaded!\n")
+    absPath = os.path.dirname(__file__)
+    staFile = os.path.join($workspacePath,"PCKnee.sta")
+    if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+        Hp.disply("2. Passed if statement!\n")
+        dataRet = os.path.join(absPath,"dataRetrieval.py")
+        command = 'abaqus python "%s"'%dataRet
+        os.chdir(absPath)
+        commandn = r'%s -- "%s"'%(command,workspacePath)
+        pCall2 = subprocess.run(commandn, shell= True)
 EOF
 cd /nobackup/mnsaz/AbqRunner
 mv runAbaqus.sh.e* runAbaqus.sh.o* temp/
