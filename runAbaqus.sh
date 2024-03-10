@@ -27,10 +27,12 @@ abaqus memory='20000mb' cpus="$NSLOTS" input="$inpPath" job="PCKnee" mp_mode=thr
 python <<-EOF
 import os  ###-3780:8 
 import subprocess
-import HelperFunc
+import HelperFunc as Hp
+Hp.disply("1. All Modules loaded!\n")
 absPath = os.path.dirname(__file__)
 staFile = os.path.join($workspacePath,"PCKnee.sta")
 if HelperFunc.fileReader(staFile)[-1] == " THE ANALYSIS HAS COMPLETED SUCCESSFULLY\n":
+    Hp.disply("2. Passed if statement!\n")
     dataRet = os.path.join(absPath,"dataRetrieval.py")
     command = 'abaqus python "%s"'%dataRet
     os.chdir(absPath)
