@@ -3,12 +3,12 @@ import random
 # import glob
 # from tkinter import messagebox
 # import psutil, shutil
-from scipy.io import savemat
+# from scipy.io import savemat
 import numpy as np
-from queue import Queue
+# from queue import Queue
 
 ## Paths
-process_queue = Queue(maxsize=1)
+# process_queue = Queue(maxsize=1)
 basePath =os.getcwd()
 os.chdir(basePath)
 MatlabOutput = os.path.join(basePath,"MatlabOutput")
@@ -77,23 +77,24 @@ def isCompleted(staFile,tConst):
             val = False; Tcmd = False
     return val,Tcmd
 
-def ManageQueue(Process,Mcount,check):
-    if Mcount==1:
-        write2File(queFile,Mcount)
-        process_queue.put(Process)
-        check = False
-    else:
-        if int(fileReader(queFile)[-1])+1==Mcount:
-            write2File(queFile,Mcount)
-            process_queue.put(Process)
-            check = False
-    return process_queue,check
+# def ManageQueue(Process,Mcount,check):
+#     if Mcount==1:
+#         write2File(queFile,Mcount)
+#         process_queue.put(Process)
+#         check = False
+#     else:
+#         if int(fileReader(queFile)[-1])+1==Mcount:
+#             write2File(queFile,Mcount)
+#             process_queue.put(Process)
+#             check = False
+#     return process_queue,check
+
 ### Write to .mat file
-def write2matlab(dat,workspacePath):
-    mdic = {"dat": dat, "label": "experiment"}
-    output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
-    savemat(output, mdic)  
-    return 
+# def write2matlab(dat,workspacePath):
+#     mdic = {"dat": dat, "label": "experiment"}
+#     output = os.path.join(MatlabOutput,"output_%s.mat"%(workspacePath.split("_")[-1]))
+#     savemat(output, mdic)  
+#     return 
 
 ### Display
 def display(data):
