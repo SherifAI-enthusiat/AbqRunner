@@ -46,8 +46,8 @@ def getnodeSet(myOdb,surf):
 
 def RetrieveData():
     odbToolbox = os.path.join(absPath,"postProTools")
-#    medCoordPath = os.path.join(workspacePath,"Results/medCoordData.txt")
-#    latCoordPath = os.path.join(workspacePath,"Results/latCoordData.txt")
+    medCoordPath = os.path.join(workspacePath,"temp/medCoordData.txt")
+    latCoordPath = os.path.join(workspacePath,"temp/latCoordData.txt")
     medEpiCoordPath = os.path.join(workspacePath,"Results/medEpiCoordData.txt")
     latEpiCoordPath = os.path.join(workspacePath,"Results/latEpiCoordData.txt")
     medDisplPath = os.path.join(workspacePath,"Results/medDisplData.txt")
@@ -70,19 +70,19 @@ def RetrieveData():
     #            undeformedCoordData(subsetHandle,medCoordPath)
     #        elif set.endswith('LATSURF'):
     #            undeformedCoordData(subsetHandle,latCoordPath)
-	for itm in menSurf:
-	    subsetHandle,set = getnodeSet(myOdb,itm)
-            if set.endswith('MEDEPICONDYLE'):
-                undeformedCoordData(subsetHandle,medEpiCoordPath)
-            else:
-                undeformedCoordData(subsetHandle,latEpiCoordPath)
-
+    for itm in menSurf:
+        subsetHandle,set = getnodeSet(myOdb,itm)
+        if set.endswith('MEDEPICONDYLE'):
+            undeformedCoordData(subsetHandle,medEpiCoordPath)
+        else:
+            undeformedCoordData(subsetHandle,latEpiCoordPath)
+    menSurfn = ['MEDSURF','LATSURF','MEDEPICONDYLE','LATEPICONDYLE']
     tmp_med = []; tmp_lat =[]; tmp_epi_med =[];tmp_epi_lat =[]
     for _,stpName in enumerate(myOdb.steps.keys()):
         if stpName.startswith('Load') or stpName.startswith('Move'):
             frameData = myOdb.steps[stpName].frames[-1]
             fieldData = frameData.fieldOutputs['U']
-            for itm in menSurf:
+            for itm in menSurfn:
                 subsetHandle,surf = getnodeSet(myOdb,itm)
                 if surf.endswith('MEDSURF'):
                     dat = fieldData.getSubset(region=subsetHandle,position=NODAL)
