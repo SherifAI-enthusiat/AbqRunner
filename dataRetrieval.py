@@ -46,8 +46,8 @@ def getnodeSet(myOdb,surf):
 
 def RetrieveData():
     odbToolbox = os.path.join(absPath,"postProTools")
-#    medCoordPath = os.path.join(workspacePath,"Results/medCoordData.txt")
-#    latCoordPath = os.path.join(workspacePath,"Results/latCoordData.txt")
+    medCoordPath = os.path.join(workspacePath,"temp/medCoordData.txt")
+    latCoordPath = os.path.join(workspacePath,"temp/latCoordData.txt")
     medEpiCoordPath = os.path.join(workspacePath,"Results/medEpiCoordData.txt")
     latEpiCoordPath = os.path.join(workspacePath,"Results/latEpiCoordData.txt")
     medDisplPath = os.path.join(workspacePath,"Results/medDisplData.txt")
@@ -57,7 +57,7 @@ def RetrieveData():
     sys.path.append(odbToolbox)
     # sys.path.append(ContactTool)
     import tools.odbTools as odbTools
-    import tools.extractors as ext
+    # import tools.extractors as ext
     # import OdbTool_1_ver1 as AnOdb_tool
     myOdb = odbTools.openOdb(odbFile)
     
