@@ -57,20 +57,22 @@ def RetrieveData():
     sys.path.append(odbToolbox)
     # sys.path.append(ContactTool)
     import tools.odbTools as odbTools
-    import tools.extractors as ext
+    # import tools.extractors as ext
     # import OdbTool_1_ver1 as AnOdb_tool
     myOdb = odbTools.openOdb(odbFile)
     
-    menSurf =['MEDSURF','LATSURF','MEDEPICONDYLE','LATEPICONDYLE']
+    menSurf =['MEDEPICONDYLE','LATEPICONDYLE']
     # Undeformed Coordinates to file - Check to see of the file exists first before writing
-    if not os.path.exists(medCoordPath):
-        for itm in menSurf:
-            subsetHandle,set = getnodeSet(myOdb,itm)
-            if set.endswith('MEDSURF'):
-                undeformedCoordData(subsetHandle,medCoordPath)
-            elif set.endswith('LATSURF'):
-                undeformedCoordData(subsetHandle,latCoordPath)
-            elif set.endswith('MEDEPICONDYLE'):
+    # if not os.path.exists(medCoordPath):
+    #    for itm in menSurf:
+    #        subsetHandle,set = getnodeSet(myOdb,itm)
+    #        if set.endswith('MEDSURF'):
+    #            undeformedCoordData(subsetHandle,medCoordPath)
+    #        elif set.endswith('LATSURF'):
+    #            undeformedCoordData(subsetHandle,latCoordPath)
+	for itm in menSurf:
+	    subsetHandle,set = getnodeSet(myOdb,itm)
+            if set.endswith('MEDEPICONDYLE'):
                 undeformedCoordData(subsetHandle,medEpiCoordPath)
             else:
                 undeformedCoordData(subsetHandle,latEpiCoordPath)
