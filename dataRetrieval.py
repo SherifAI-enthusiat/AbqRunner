@@ -46,12 +46,12 @@ def getnodeSet(myOdb,surf):
 
 def RetrieveData():
     odbToolbox = os.path.join(absPath,"postProTools")
-    medCoordPath = os.path.join(workspacePath,"Results\medCoordData.txt")
-    latCoordPath = os.path.join(workspacePath,"Results\latCoordData.txt")
-    medEpiCoordPath = os.path.join(workspacePath,"Results\medEpiCoordData.txt")
-    latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
-    medDisplPath = os.path.join(workspacePath,"Results\medDisplData.txt")
-    latDisplPath = os.path.join(workspacePath,"Results\latDisplData.txt")
+#    medCoordPath = os.path.join(workspacePath,"Results/medCoordData.txt")
+#    latCoordPath = os.path.join(workspacePath,"Results/latCoordData.txt")
+    medEpiCoordPath = os.path.join(workspacePath,"Results/medEpiCoordData.txt")
+    latEpiCoordPath = os.path.join(workspacePath,"Results/latEpiCoordData.txt")
+    medDisplPath = os.path.join(workspacePath,"Results/medDisplData.txt")
+    latDisplPath = os.path.join(workspacePath,"Results/latDisplData.txt")
     odbFile = os.path.join(workspacePath,"PCKnee.odb")
     os.mkdir(os.path.dirname(latEpiCoordPath)) # Creates the Results path for my files
     sys.path.append(odbToolbox)
