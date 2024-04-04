@@ -5,6 +5,8 @@ import random
 # import psutil, shutil
 # from scipy.io import savemat
 import numpy as np
+import glob
+# from pathlib import Path
 # from queue import Queue
 
 ## Paths
@@ -15,6 +17,24 @@ MatlabOutput = os.path.join(basePath,"MatlabOutput")
 queFile = os.path.join(basePath,"WorkQueue.ascii")
 OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
 RunDir = os.path.join(basePath,"RunDir")
+
+def findFiles():
+    tmpPath = []
+    cwdir = "E:\Optimisation - Thesis studies\Knee 2\workspace\*\TestJob-2.inp"
+    findFiles =  glob.glob(cwdir)
+    for _,itm in enumerate(findFiles):
+        path = os.path.dirname(itm)
+        tmpPath.append(path)
+    return tmpPath
+
+def definePaths(workspacePath):
+    medEpiCoordPath = os.path.join(workspacePath,"Results\medEpiCoordData.txt")
+    latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
+    medDisplPath = os.path.join(workspacePath,"Results\medDisplData.txt")
+    latDisplPath = os.path.join(workspacePath,"Results\latDisplData.txt")
+    odbFile = os.path.join(workspacePath,"genOdb_%s.odb"%(workspacePath.split("_")[-1]))
+    newls = [medEpiCoordPath,latEpiCoordPath,medDisplPath,latDisplPath,odbFile]
+    return newls
 
 def checkInpfile(kneeName):
     lines = fileReader("TestJob-2.inp")
@@ -154,3 +174,14 @@ def communicate():
 def OdbQueue(command):
     with open(OdbqueFile,"+a") as jobFile:
         jobFile.writelines(command+"\n")
+    return
+
+def findParameters(Directory):
+    path = os.path.join(Directory,"TestJob-2.inp")
+    path = path.replace('\temp',"\\temp")
+    lines = fileReader(path)
+    for ind,item in enumerate(lines):
+        if item.startswith('*Material') and item.endswith('PM_MENISCAL_MEN\n'):
+            coef = lines[ind+2].strip("\n")
+            break
+    return coef

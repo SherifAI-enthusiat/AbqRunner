@@ -1,7 +1,7 @@
 .vscode/
-test.py
 runAbaqus.sh.*
 workspace
 temp/
 __pycache__
 debugReport.ascii
+*.asv

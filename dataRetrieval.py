@@ -76,6 +76,7 @@ def RetrieveData():
             undeformedCoordData(subsetHandle,medEpiCoordPath)
         else:
             undeformedCoordData(subsetHandle,latEpiCoordPath)
+    
     menSurfn = ['MEDSURF','LATSURF','MEDEPICONDYLE','LATEPICONDYLE']
     tmp_med = []; tmp_lat =[]; tmp_epi_med =[];tmp_epi_lat =[]
     for _,stpName in enumerate(myOdb.steps.keys()):
