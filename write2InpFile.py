@@ -20,7 +20,7 @@ def writeInp(x,orifile,workspacePath,inpName):
         if ind!= 0 and ind <=7:
             new_param = new_param + ', %s'%item
     for ind,item in enumerate(lines):
-        if item.startswith('*Spring') and not item.endswith("elset=TORSION\n"):
+        if item.startswith('*Spring'):
             cr1 =item.split("-")[1]=="A"; cr2 = item.split("-")[1]=="B"; cr3 = item.split("-")[1]=="C"; cr4 = item.split("-")[1]=="D"
             if cr1 or cr2 or cr3 or cr4:
                 data['spring_locs'].append(ind+2)

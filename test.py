@@ -13,43 +13,43 @@
 #     except:
 #         continue
 ######################### Reads code from HPC ##########################
-# import HelperFunc as Hp
-# import numpy as np
-# import subprocess,os,shutil
-# import glob
-# cwdir = os.path.dirname(__file__)
-# # expData = np.genfromtxt("compData.txt")
+import HelperFunc as Hp
+import numpy as np
+import subprocess,os,shutil
+import glob
+cwdir = os.path.dirname(__file__)
+# expData = np.genfromtxt("compData.txt")
 
-# def ReadWriteOdb(filePath):
-#     paths = Hp.definePaths(filePath)
-#     if os.path.exists(paths[0]):
-#         shutil.rmtree(os.path.dirname(paths[0]))
-#     dataRet = os.path.join(os.getcwd(),"readOdb.py")
-#     command = 'abaqus python "%s"'%dataRet
-#     commandn = r'%s -- "%s"'%(command,filePath)
-#     pcall = subprocess.call(commandn,shell=True)
-#     return
+def ReadWriteOdb(filePath):
+    paths = Hp.definePaths(filePath)
+    if os.path.exists(paths[0]):
+        shutil.rmtree(os.path.dirname(paths[0]))
+    dataRet = os.path.join(os.getcwd(),"readOdb.py")
+    command = 'abaqus python "%s"'%dataRet
+    commandn = r'%s -- "%s"'%(command,filePath)
+    pcall = subprocess.call(commandn,shell=True)
+    return
 
-# def findParameters(lines):
-#     for ind,item in enumerate(lines):
-#         if item.startswith('*Material') and item.endswith('PM_MENISCAL_MEN\n'):
-#             coef = lines[ind+2].strip("\n")
-#             break
-#     return coef
+def findParameters(lines):
+    for ind,item in enumerate(lines):
+        if item.startswith('*Material') and item.endswith('PM_MENISCAL_MEN\n'):
+            coef = lines[ind+2].strip("\n")
+            break
+    return coef
 
-# Directory = "E:\Optimisation - Thesis studies\Knee 2\workspace"
-# findFiles = glob.glob(Directory + "\*\TestJob-2.inp")
-# tmp = []
-# for ind,val in enumerate(findFiles):
-#     lines = Hp.fileReader(val)
-#     tmp.append(findParameters(lines))
-#     # To write results files
-#     val = val.strip("TestJob-2.inp")
-#     # newVal = glob.glob(val + "genOdb*.odb")
-#     # newVal1 = glob.glob(val + "PCKnee*.odb")
-#     ReadWriteOdb(val)
-# tmp = np.vstack(tmp)
-# np.savetxt("compData.txt",tmp,delimiter=',')
+Directory = "E:\Optimisation - Thesis studies\Knee 5"
+findFiles = glob.glob(Directory + "\workspace_*\TestJob-2.inp")
+tmp = []
+for ind,val in enumerate(findFiles):
+    lines = Hp.fileReader(val)
+    tmp.append(findParameters(lines))
+    # To write results files
+    val = val.strip("\\TestJob-2.inp")
+    # newVal = glob.glob(val + "genOdb*.odb")
+    # newVal1 = glob.glob(val + "PCKnee*.odb")
+    ReadWriteOdb(val)
+tmp = np.vstack(tmp)
+np.savetxt("compData.txt",tmp,delimiter=',')
 
 ##############################################################
 # import HelperFunc as Hp
@@ -63,5 +63,4 @@
 # orifile = "TestJob-2.inp"
 # workspacePath = "MatlabOutput"
 # w2p.writeInp(x,orifile,workspacePath,orifile)
-
 

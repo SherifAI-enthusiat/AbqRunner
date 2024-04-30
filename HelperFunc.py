@@ -18,9 +18,9 @@ queFile = os.path.join(basePath,"WorkQueue.ascii")
 OdbqueFile = os.path.join(basePath,"OdbQueue.ascii")
 RunDir = os.path.join(basePath,"RunDir")
 
-def findFiles():
+def findFiles(path):
     tmpPath = []
-    cwdir = "E:\Optimisation - Thesis studies\Knee 2\workspace\*\TestJob-2.inp"
+    cwdir = path +"\*\Results\latEpiCoordData.txt"
     findFiles =  glob.glob(cwdir)
     for _,itm in enumerate(findFiles):
         path = os.path.dirname(itm)

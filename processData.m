@@ -1,30 +1,39 @@
 %% Determining the distribution of menisci tissue property coefficient.
 % This code will be used to determine the distribution of the material property parameters of the menisci
-Obj = myFunctions().collectkneeDetails("Knee 2");
-dat = Obj.findFiles();
-store = {};
-for i = 1:size(dat,2)
-    workspacePath = string(dat(1,i));
-    try
-        [data,Obj] = Obj.measureMenisci(workspacePath);
-    catch
-        data = zeros(4,12);
-    end
-    Residual = Obj.errorfunc(data);
+clear,clc
+Obj = myFunctions().collectkneeDetails("Knee 4");
+folders = Obj.findFiles("E:\Optimisation - Thesis studies\Knee 4\workspace");
+folders = string(folders);
+load(fullfile(Obj.path,"expData.mat"));
+store = {}; ba = size(folders,2); 
+parfor i = 1:ba
+    Obj = myFunctions().collectkneeDetails("Knee 4");
+    workspacePath = folders(1,i);
+        try
+            [dat,tibiaF,Obj] = Obj.measureMenisci(workspacePath);
+        catch Error
+            dat = zeros(4,12);  tibiaF = zeros(8,3);
+            disp(Error)
+        end
+    % tibialFeatures = obj.tibiaFeatures;
+    Residual = errorfuncA(dat,tibiaF,expData,tibiaFeatures);
     params = Obj.findParameters(workspacePath);
     stn = params + ','+string(Residual);
+    % stn = string(i) + ','+string(Residual);
     store(i) = {string(stn)};
     
 end
 
 %% Read results and calculate residual
-load("knee5_HPC.mat")
+% strc = 'MatlabOutput\Knee 4\knee4_HPC_obj.mat';%% This is where I can change bits.
+% load(strc)
 a = size(store,2);
 tmp = zeros(a,9);
 for i = 1:a
     strn = store(i);
     tmp(i,:) = str2num(strn{1});
 end
+
 
 figure(1)
 scatter(tmp(:,1),tmp(:,3),"k*")
@@ -36,13 +45,27 @@ xlabel("Axial stiffness")
 ylabel("Circumferential stiffness")
 zlabel("Residual")
 %% Filter resifual
-bol = tmp(:,9)<=25000;
+bol = tmp(:,9)<=50000000;
 rmTmp = tmp(bol,:);
+[~,mnind] = min(tmp(:,9));
+[~,mxind] = max(rmTmp(:,9));
+minVal = tmp(mnind,:);
+maxVal = rmTmp(mxind,:);
 figure(3)
 scatter3(rmTmp(:,1),rmTmp(:,3),rmTmp(:,9))
+hold on
+scatter3(minVal(:,1),minVal(:,3),minVal(:,9))
 xlabel("Axial stiffness")
 ylabel("Circumferential stiffness")
 zlabel("Residual")
+hold off
+figure(4)
+scatter(rmTmp(:,3),rmTmp(:,9))
+% hold on
+% scatter(minVal(:,3),minVal(:,9))
+xlabel("Circumferential stiffness")
+ylabel("Residual")
+hold off
 
 %% Plot of residual
 X = data(:,1); Y = data(:,3); Z = data(:,9);
@@ -109,15 +132,23 @@ poi_line2 = f1 + 10*ndorm;
 poi_line = [f1;poi_line2];
 scatter3(poi_line(:,1),poi_line(:,2),poi_line(:,3),"rs")
 hold off
-%% Coordinate system check
-% Center the data points by subtracting the mean of each coordinate
-points_global = [4.396, -6.235, 10.181;	
--29.093, -12.835, 9.922;
--0.8771, -29.179, 10.778;	
--19.585, -40.418, 10.805];
-points_other = [63.184, 3.307, 43.86;
-29.097, 2.189, 42.466;
-54.444, 3.803, 21.998;	
-34.236, 3.458, 13.76];
+%% Statistics
+newPa = rmTmp(:,[1,3,8,9]);
+objt = anova(newPa);
+%% Error function defintions
+function result = errorfuncA(data,data1,expData,tibialFeatures)
+    tempA = 100*(data-expData)./expData; % .*scalarM TO DO need to check dimensions here.
+    tempB = 100*(data1-tibialFeatures)./tibialFeatures;
+    temp1 = sum(tempA.^2,'all');
+    temp2 = sum(tempB.^2,'all');
+    result = temp1 + 1000.*temp2; 
+end
 
+% store ={};
+% for i=1:a
+%      params = Obj.findParameters(folders(i));
+%      Residual = tmp(i,2);
+%      stn = params + ','+string(Residual);
+%      store(i) = {string(stn)};
+% end
 

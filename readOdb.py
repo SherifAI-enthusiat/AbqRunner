@@ -95,8 +95,8 @@ def getnodeSet(myOdb,surf):
 
 def RetrieveData(workspacePath):
     odbToolbox = os.path.join(absPath,"postProTools")
-    medCoordPath = os.path.join(absPath,"MatlabOutput\Knee 2\medCoordData.txt")
-    latCoordPath = os.path.join(absPath,"MatlabOutput\Knee 2\latCoordData.txt")
+    # medCoordPath = os.path.join(absPath,"MatlabOutput\Knee 2\medCoordData.txt")
+    # latCoordPath = os.path.join(absPath,"MatlabOutput\Knee 2\latCoordData.txt")
     workspacePath = workspacePath.strip('"')
     medEpiCoordPath = os.path.join(workspacePath,"Results\medEpiCoordData.txt")
     latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
@@ -109,6 +109,7 @@ def RetrieveData(workspacePath):
     else:
         stn = workspacePath + "\genOdb*.odb"
         odbFile = glob.glob(stn)
+        odbFile = odbFile[0]
     os.mkdir(os.path.dirname(latEpiCoordPath)) # Creates the Results path for my files
     # odbFile = "C:\Temp\knee4_test-v3.odb" # Allows me to test tibia features.
     sys.path.append(odbToolbox)
@@ -121,13 +122,13 @@ def RetrieveData(workspacePath):
     menSurf =['MEDSURF','LATSURF','LATEPICONDYLE','MEDEPICONDYLE']
     menNew = ['MEDEPICONDYLE','LATEPICONDYLE']
     # Undeformed Coordinates to file - Check to see of the file exists first before writing
-    if not os.path.exists(medCoordPath):
-        for itm in menSurf:
-            subsetHandle,set = getnodeSet(myOdb,itm)
-            if set.endswith('MEDSURF'):
-                undeformedCoordData(subsetHandle,medCoordPath)
-            elif set.endswith('LATSURF'):
-                undeformedCoordData(subsetHandle,latCoordPath)
+    # if not os.path.exists(medCoordPath):
+    #     for itm in menSurf:
+    #         subsetHandle,set = getnodeSet(myOdb,itm)
+    #         if set.endswith('MEDSURF'):
+    #             undeformedCoordData(subsetHandle,medCoordPath)
+    #         elif set.endswith('LATSURF'):
+    #             undeformedCoordData(subsetHandle,latCoordPath)
     for itm in menNew: 
         subsetHandle,set = getnodeSet(myOdb,itm)
         if set.endswith('MEDEPICONDYLE'):

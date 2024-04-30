@@ -12,7 +12,10 @@ classdef myFunctions
         pixelConv; % This is data from ScanIP i.e. convertion factor from pixel to length(mm).
         path; % Path to experimental data stored.
         mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
-        expData
+        expData;
+        tibiaFeatures;
+        avgheight; % this quantity is used to store some height value from Move step.
+        mVal_lVal; % Used to adjust experimental tibial movement data in error function(Pareto front).
     end 
 
     methods
@@ -31,14 +34,15 @@ classdef myFunctions
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
                 % workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
-                data = obj.measureMenisci(workspacePath);
+                [dat,tibiaF,obj] = obj.measureMenisci(workspacePath);
+                data.dat = dat; data.tibiaF = tibiaF;
             else
                 data = zeros(4,12);
             end
-            outputn = obj.errorfunc(double(data),expData);
+            outputn = obj.errorfunc(data);
         end
         %% This function handles the secondary aspect of the optimisation
-        function [measuredDisplacements,obj] = measureMenisci(obj,path);
+        function [measuredDisplacements,tibiaData,obj] = measureMenisci(obj,path)
             % This script collects the radial displacements of the menisci with respect two points at approx. centre of either tibial compartment.
             %% To - Do 
             % ------  Input required for optimisation
@@ -61,6 +65,7 @@ classdef myFunctions
             % Obj = myFunctions();
             load(string(fp_coords(3)));
             obj.expData = expData;
+            obj.tibiaFeatures = tibiaFeatures;
             obj.oriCoords = vertcat(med_men,lat_men);
             obj.med_men_length = size(med_men,1); 
             displ = vertcat(med_men_displ,lat_men_displ);
@@ -69,7 +74,8 @@ classdef myFunctions
             % axes = [axisSI,axisAP];
             %% This piece of code determines the location of the menisci points for measurements.
             tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
-            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,obj.axes);
+            tibiaData = [tibiaEpiCoords.med;tibiaEpiCoords.lat];
+            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,displ,obj.axes);
             %% I am here - Need to verify that points around the menisci are at the right location.
             % relative to surface from Abaqus. i then need to check resultant coords and measure points.
             %% FindPointsInCylinder function
@@ -83,15 +89,14 @@ classdef myFunctions
             % end
         end
         %% Cost function for optimisation
-        function result = errorfunc(obj,data,dir)
+        function result = errorfunc(obj,data)
             expData = obj.expData;
-            temp = 100*(data(1:end,:)-expData)./expData; % .*scalarM TO DO need to check dimensions here.
-            temp = temp.^2;
-            if exist("dir",'var')
-                result = sum(temp,dir);
-            else
-                result = sum(temp,'all'); 
-            end
+            tibialFeatures = obj.tibiaFeatures;
+            tempA = 100*(data.dat(1:end,:)-expData)./expData; % .*scalarM TO DO need to check dimensions here.
+            tempB = 100*(data.tibiaF(1:end,:)-tibialFeatures)./tibialFeatures;
+            temp1 = sum(tempA.^2,'all');
+            temp2 = sum(tempB.^2,'all');
+            result = temp1 + 10*temp2; 
         end
         %% For storing variables
         function obj = variables(obj,parameters,sfM,varargin)
@@ -271,7 +276,7 @@ classdef myFunctions
         end
     end
 
-    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,planeHeight,axes) % To - Do
+    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,planeHeight,displ,axes) % To - Do
         %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results for optimisation purposes.
         ScalarA = 1.0; ScalarB = 1.5; ScalarC = 3.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
         if obj.mnmx == 0 % Default case
@@ -311,7 +316,8 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            constHeight = obj.pixelConv*planeHeight(it);
+            [~,obj] =obj.ResultantCoordinates(displ);
+            constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight;% this is to correct for the issue of modelling in Abaqus
             newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
             newCentre(it).med(1,SI_Dir) = constHeight; 
             newCentre(it).lat(1,SI_Dir) = constHeight;
@@ -319,23 +325,27 @@ classdef myFunctions
         end
     end
 
-    function defCoords = ResultantCoordinates(obj,displacements)
+    function [defCoords,obj] = ResultantCoordinates(obj,displacements)
         % This function finds the deformed coordinate given coordinates from the assembly in Abaqus.  
         a = obj.med_men_length;
         med_men = obj.oriCoords(1:a,:); lat_men = obj.oriCoords(a+1:end,:); % These are the coordinates of the medial and lateral menisci
         med_men_displ = displacements(1:a*4,:); lat_men_displ = displacements((a*4)+1:end,:); % This data is composed of 4 steps {Move,Load1, Load2 and load3} 
         [b,~] = size(lat_men_displ); %[a,~] = size(med_men_displ); 
         b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
+        mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
+        obj.mVal_lVal = [mVal,lVal];
+        obj.avgheight = ( mVal + lVal )/2; % Average of movement in the meniscus
         for it =1:4
             defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
             defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
         end
+        obj.defCoords = defCoords;
         % This is a structure with each row corresponding to the load step{Move, Load1, Load2,Load3}
     end
 
     function [results, obj] = EstimateMenisciDisplacements(obj,Points2Measure,displacements)
         cyl_rad =1.5; % this will be modified until suitable value is found{Verify by plotting}
-        obj.defCoords = obj.ResultantCoordinates(displacements); % These are the coordinates after displacements 
+        [~,obj] = obj.ResultantCoordinates(displacements); % These are the coordinates after displacements 
         ltn = ["med_men","lat_men"]; % Separates the data into lateral and medial
         nlt = ["trp(1:6,:)","trp(7:12,:)"];  % These are the points plotted around the periphery of the menisci
         for it=1:size(Points2Measure,2)
@@ -416,25 +426,30 @@ classdef myFunctions
             obj.path =  "MatlabOutput\Knee 5";
             obj.mnmx = true; % This is the case where the SI is pointing downs instead of upwards hence causes issues in code.
         end
-        py.importlib.import_module('HelperFunc');
-        val = py.HelperFunc.checkInpfile(kneeName);
-        try
-            py.HelperFunc.initialise();
-        catch
-        end
-        if val == 0
-            error("Ensure the right Abaqus file i.e .inp file is in the root directory")
-        end
+        % py.importlib.import_module('HelperFunc');
+        % val = py.HelperFunc.checkInpfile(kneeName);
+        % try
+        %     py.HelperFunc.initialise();
+        % catch
+        % end
+        % if val == 0
+        %     error("Ensure the right Abaqus file i.e .inp file is in the root directory")
+        % end
     end
 
-    function [data] = findFiles(obj)
-        data = py.HelperFunc.findFiles();
+    function [data] = findFiles(obj,path)
+        data = py.HelperFunc.findFiles(path);
     end
 
     function [param] = findParameters(obj,path)
+        path = py.str(path);
         param = py.HelperFunc.findParameters(path);
     end
 
+    function [obj] = resetData2Store(obj)
+        obj.defCoords =[];
+        obj.oriCoords =[];
+    end
 
 end
 end
