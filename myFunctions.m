@@ -333,8 +333,8 @@ classdef myFunctions
         [b,~] = size(lat_men_displ); %[a,~] = size(med_men_displ); 
         b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
         mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
-        obj.mVal_lVal = [mVal,lVal];
-        obj.avgheight = ( mVal + lVal )/2; % Average of movement in the meniscus
+        obj.mVal_lVal = [mVal,lVal]; %% Correction - calc
+        obj.avgheight = ( mVal + lVal )/2; %% Correction - calc Average of movement in the meniscus
         for it =1:4
             defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
             defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);

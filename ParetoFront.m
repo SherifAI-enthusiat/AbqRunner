@@ -1,7 +1,7 @@
 %% Determining the distribution of menisci tissue property coefficient.
 % This code will be used to determine the distribution of the material property parameters of the menisci
-clear,clc
-kneeName = "Knee 5";
+clear,clc,close all
+kneeName = "Knee 2";
 Obj = myFunctions().collectkneeDetails(kneeName);
 basePath = "E:\\Optimisation - Thesis studies\\%s";
 path = sprintf(basePath,kneeName);
@@ -9,9 +9,9 @@ path = sprintf(basePath,kneeName);
 folders = Obj.findFiles(path);
 folders = string(folders);
 load(fullfile(Obj.path,"expData.mat"));
-ba = size(folders,2); ab = 0;
-dataN =  repmat(struct('store', [] ,'data', []),41,1);
-for K=0:25:1000
+ba = size(folders,2); ab = 0; Kconst = 26;
+dataN =  repmat(struct('store', [] ,'data', []),Kconst,1);
+for K=0:1:Kconst
     store = cell(1, ba);
     data =  repmat(struct('dat', [], 'tibiaF', [],'Obj', []), ba, 1);
     if ~isempty(dataN(1).data)

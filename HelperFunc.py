@@ -20,11 +20,23 @@ RunDir = os.path.join(basePath,"RunDir")
 
 def findFiles(path):
     tmpPath = []
-    cwdir = path +"\*\Results\latEpiCoordData.txt"
-    findFiles =  glob.glob(cwdir)
-    for _,itm in enumerate(findFiles):
-        path = os.path.dirname(itm)
-        tmpPath.append(path)
+    # cwdir = path+"\\*\\Results"
+    # smcwdir = cwdir
+    # findFiles =  glob.glob(smcwdir)
+    # for _,itm in enumerate(findFiles):
+    #     path = os.path.dirname(itm)
+    #     tmpPath.append(path)
+    # return tmpPath
+
+    for root, _, files in os.walk(path):
+        for filename in files:
+            if filename.endswith("latEpiCoordData.txt"):
+                path = os.path.dirname(os.path.join(root, filename))
+                if os.path.isdir(path):
+                    tmpPath.append(path.strip("\\Results"))  # Include full path
+                elif os.path.isfile(path):
+                    try: tmpPath.append(path.strip("\\TestJob-2.inp"))
+                    except:tmpPath.append(os.path.dirname(path))
     return tmpPath
 
 def definePaths(workspacePath):
