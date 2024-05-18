@@ -37,28 +37,28 @@ def findParameters(lines):
             break
     return coef
 
-Directory = "E:\Optimisation - Thesis studies\Knee 5"
-findFiles = glob.glob(Directory + "\workspace_*\TestJob-2.inp")
-tmp = []
-for ind,val in enumerate(findFiles):
-    lines = Hp.fileReader(val)
-    tmp.append(findParameters(lines))
-    # To write results files
-    val = val.strip("\\TestJob-2.inp")
-    # newVal = glob.glob(val + "genOdb*.odb")
-    # newVal1 = glob.glob(val + "PCKnee*.odb")
-    ReadWriteOdb(val)
-tmp = np.vstack(tmp)
-np.savetxt("compData.txt",tmp,delimiter=',')
+# Directory = "E:\Optimisation - Thesis studies\Knee 5"
+# findFiles = glob.glob(Directory + "\workspace_*\TestJob-2.inp")
+# tmp = []
+# for ind,val in enumerate(findFiles):
+#     lines = Hp.fileReader(val)
+#     tmp.append(findParameters(lines))
+#     # To write results files
+#     val = val.strip("\\TestJob-2.inp")
+#     # newVal = glob.glob(val + "genOdb*.odb")
+#     # newVal1 = glob.glob(val + "PCKnee*.odb")
+#     ReadWriteOdb(val)
+# tmp = np.vstack(tmp)
+# np.savetxt("compData.txt",tmp,delimiter=',')
 
 ##############################################################
-# import HelperFunc as Hp
-# import os
+import HelperFunc as Hp
+import os
 # import write2InpFile as w2p
-# # cwdir = "E:\Optimisation - Thesis studies\HPC\Knee 5\workspace\wemp-997" 
-# # cwdir = os.path.join(cwdir,"TestJob-2.inp")
-# # Hp.findParameters(cwdir)
-# # test = Hp.findFiles()
+cwdir = "E:\Optimisation - Thesis studies\Knee 4" 
+# cwdir = os.path.join(cwdir,"TestJob-2.inp")
+# Hp.findParameters(cwdir)
+test = Hp.findFiles(cwdir)
 # x =[0.01, 0.01, 1.0, 0.01, 0.01, 0.01, 8.6, 18.4, 18.4]
 # orifile = "TestJob-2.inp"
 # workspacePath = "MatlabOutput"

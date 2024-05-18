@@ -2,11 +2,11 @@
 % This code will be used to determine the distribution of the material property parameters of the menisci
 clear,clc
 Obj = myFunctions().collectkneeDetails("Knee 4");
-folders = Obj.findFiles("E:\Optimisation - Thesis studies\Knee 4\workspace");
+folders = Obj.findFiles("E:\Optimisation - Thesis studies\Knee 4");
 folders = string(folders);
 load(fullfile(Obj.path,"expData.mat"));
 store = {}; ba = size(folders,2); 
-parfor i = 1:ba
+for i = 1:ba
     Obj = myFunctions().collectkneeDetails("Knee 4");
     workspacePath = folders(1,i);
         try

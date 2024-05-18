@@ -12,10 +12,15 @@ classdef myFunctions
         pixelConv; % This is data from ScanIP i.e. convertion factor from pixel to length(mm).
         path; % Path to experimental data stored.
         mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
+        weights;
         expData;
         tibiaFeatures;
         avgheight; % this quantity is used to store some height value from Move step.
         mVal_lVal; % Used to adjust experimental tibial movement data in error function(Pareto front).
+        error_Value = [];
+        K_value = 0;
+        testPath ;
+        test = "False"
     end 
 
     methods
@@ -32,14 +37,28 @@ classdef myFunctions
             if py.ParamTools.material_stability(x)
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
-                [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
-                % workspacePath = "C:\WorkThings\github\Abaqus_FE_Optim\runDir\workspace_17985565299";
-                [dat,tibiaF,obj] = obj.measureMenisci(workspacePath);
-                data.dat = dat; data.tibiaF = tibiaF;
+                if obj.test == "True"
+                    workspacePath = obj.testPath;
+                else % This is the default
+                    [~, workspacePath]= pyrunfile(cmd,["Mcount","workspacePath"]);
+                end
+                try
+                    [FE_dat,FE_tibiaF,obj] = obj.measureMenisci(workspacePath);
+					% data.dat = dat; data.tibiaF = tibiaF;
+                    dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.mVal_lVal,obj.axes(1),obj.weights,obj.K_value};
+                catch
+                    FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
+					% data.dat = dat; data.tibiaF = tibiaF;
+                    dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.mVal_lVal,obj.axes(1),obj.weights,obj.K_value};
+                end
             else
-                data = zeros(4,12);
+				FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
+				% data.dat = dat; data.tibiaF = tibiaF;
+                dataCell = {FE_dat,expData,FE_tibiaF,tibiaFeatures,[0,0],obj.axes(1),obj.weights,obj.K_value};
             end
-            outputn = obj.errorfunc(data);
+            [outputn,menContribution] = obj.errorfunc(dataCell);
+			resid = [menContribution,outputn]; % Menisci and tibial contributions
+			obj.error_Value = vertcat(obj.error_Value,resid);
         end
         %% This function handles the secondary aspect of the optimisation
         function [measuredDisplacements,tibiaData,obj] = measureMenisci(obj,path)
@@ -58,7 +77,6 @@ classdef myFunctions
             med_men = readmatrix(string(fp_coords(1)));lat_men = readmatrix(string(fp_coords(2)));
             med_men_displ = readmatrix(string(fp_disp(1)));lat_men_displ = readmatrix(string(fp_disp(2)));
             medEpiCoord = readmatrix(string(fp_disp(3)));latEpiCoord = readmatrix(string(fp_disp(4)));
-            load(string(fp_coords(3)));
             % Undeformed data - Move step is applied to bring it to the undeformed technically. 
             % Since Abaqus has issues with surfaces in contact. So i have to rearrange the data into four load steps and added the Move step load case to coord data.
             %% This piece of code determines the axis on which the menisci lies - {Doesnt work consistently for all samples hence I decided to ignore it}
@@ -75,7 +93,7 @@ classdef myFunctions
             %% This piece of code determines the location of the menisci points for measurements.
             tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
             tibiaData = [tibiaEpiCoords.med;tibiaEpiCoords.lat];
-            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,displ,obj.axes);
+            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,obj.axes,displ);
             %% I am here - Need to verify that points around the menisci are at the right location.
             % relative to surface from Abaqus. i then need to check resultant coords and measure points.
             %% FindPointsInCylinder function
@@ -89,14 +107,16 @@ classdef myFunctions
             % end
         end
         %% Cost function for optimisation
-        function result = errorfunc(obj,data)
-            expData = obj.expData;
-            tibialFeatures = obj.tibiaFeatures;
-            tempA = 100*(data.dat(1:end,:)-expData)./expData; % .*scalarM TO DO need to check dimensions here.
-            tempB = 100*(data.tibiaF(1:end,:)-tibialFeatures)./tibialFeatures;
-            temp1 = sum(tempA.^2,'all');
-            temp2 = sum(tempB.^2,'all');
-            result = temp1 + 10*temp2; 
+        function [result,temp1] = errorfunc(obj,data)
+            trans_Tibia = [data{5}(1).*ones(4,3);data{5}(2).*ones(4,3)]; % Used to translate only along tibia loading axis
+            tibialFeatures = data{4}+trans_Tibia; % This is meant to be a correction for the tibial movements - due to FE modelling. 
+			tempA = 100*(data{1}-data{2})./data{2}; % .*scalarM TO DO need to check dimensions here.
+            tempA = data{7}.*tempA; % Used to control situations when meaurement is problematic
+            tempB = 100*(data{3}-tibialFeatures)./tibialFeatures;		
+			tempB = data{8}.*tempB(:,data{6}); % This should be a single dimension - Verify
+			temp1 = sum(tempA.^2,'all');
+            temp2 = sum(tempB.^2,'all'); % To check -----
+            result = temp1 + temp2; % Updated objective function - includes the tibial motion into the menisci. Addresses the issue where the menisci is increasingly stiffening.
         end
         %% For storing variables
         function obj = variables(obj,parameters,sfM,varargin)
@@ -247,7 +267,7 @@ classdef myFunctions
         ln_3D = p(1:3) + t*Dir;
         apprxAns = mean(data);
         delTa = abs(ln_3D - apprxAns);
-        cri = [.5,.5,.5]; ltn = ["cs","ks"];
+        cri = [.85,.85,.85]; ltn = ["cs","ks"];
         Bool = delTa>cri;
         if sum(Bool) >= 1
             pltM = ltn(1); ln_3D = apprxAns;
@@ -276,7 +296,7 @@ classdef myFunctions
         end
     end
 
-    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,planeHeight,displ,axes) % To - Do
+    function [Points2Measure,newCentre] = PointsAroundMenisci(obj,tibiaEpiCoords,planeHeight,axes,displacements) % To - Do
         %% Important -- This code is a replica of what is in ScanIP("CalculateMenLocations.py") to allow congruency in results for optimisation purposes.
         ScalarA = 1.0; ScalarB = 1.5; ScalarC = 3.5; % These are definitions I visualised and liked in ScanIP - hence why Scalar is different for medial and lateral plateau points centres.
         if obj.mnmx == 0 % Default case
@@ -290,6 +310,7 @@ classdef myFunctions
         tes = obj.generatePoints(70,6); % these are defined constants in ScanIP
         Points2Measure = struct();
         SI_Dir = axes(1); AP_Dir = axes(2);
+        [~,obj] = obj.ResultantCoordinates(displacements);
         for it = 1:a
             % I will use newCentre to calc locations around the periphery of the menisci. The newcentre is calc based on two operations
             % 1. Using the direction vector based on tibial features 2. Modifying location using original tibia centres and translating by some amount.
@@ -316,7 +337,6 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            [~,obj] =obj.ResultantCoordinates(displ);
             constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight;% this is to correct for the issue of modelling in Abaqus
             newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
             newCentre(it).med(1,SI_Dir) = constHeight; 
@@ -377,7 +397,7 @@ classdef myFunctions
                     else
                         pltM = "rs"; % These are approximate solutions.
                         if isempty(IntData)
-                            parameters(7) = 3.5; % Increase the radius to try and capture more points.
+                            parameters(7) = 2.5; % Increase the radius to try and capture more points.
                             [IntData,cyl_mod] = obj.cylinderIntersect(parameters,data);
                             point = mean(IntData,1);
                         else
@@ -449,6 +469,15 @@ classdef myFunctions
     function [obj] = resetData2Store(obj)
         obj.defCoords =[];
         obj.oriCoords =[];
+    end
+    
+    function [obj] = optimisationControl(obj,Scalar_weights)
+        if exist("Scalar_weights",'var')
+            obj.weights = Scalar_weights;
+        else % this is the default where we dont control which node the optimisation uses.
+            ff = fullfile(obj.path,"expData.mat"); load(ff); [a,b] = size(expData);
+            obj.weights = ones(a,b);
+        end
     end
 
 end

@@ -27,16 +27,22 @@ def findFiles(path):
     #     path = os.path.dirname(itm)
     #     tmpPath.append(path)
     # return tmpPath
-
-    for root, _, files in os.walk(path):
-        for filename in files:
-            if filename.endswith("latEpiCoordData.txt"):
-                path = os.path.dirname(os.path.join(root, filename))
-                if os.path.isdir(path):
-                    tmpPath.append(path.strip("\\Results"))  # Include full path
-                elif os.path.isfile(path):
-                    try: tmpPath.append(path.strip("\\TestJob-2.inp"))
-                    except:tmpPath.append(os.path.dirname(path))
+    files1 = glob.glob(path+"\\runDir\\workspace_*\\TestJob-2.inp")
+    files2 = glob.glob(path+"\\workspace\\temp-*\\TestJob-2.inp")
+    totfiles = files1 + files2
+    for file in totfiles:
+        resultsFolder = os.path.dirname(file) +"\\Results"
+        if os.path.isfile(file) and os.path.isdir(resultsFolder):
+            tmpPath.append(os.path.dirname(file))
+    # for root, _, files in os.walk(path):
+    #     for filename in files:
+    #         if filename.endswith("latEpiCoordData.txt"):
+    #             path = os.path.dirname(os.path.join(root, filename))
+    #             if os.path.isdir(path):
+    #                 tmpPath.append(path.strip("\\Results"))  # Include full path
+    #             elif os.path.isfile(path):
+    #                 try: tmpPath.append(path.strip("\\TestJob-2.inp"))
+    #                 except:tmpPath.append(os.path.dirname(path))
     return tmpPath
 
 def definePaths(workspacePath):
