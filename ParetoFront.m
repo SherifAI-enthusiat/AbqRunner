@@ -52,7 +52,7 @@ end
 %% Pareto plot
 a = size(store,2);
 tmp = zeros(a,10);
-Kdata = zeros(ab,Kconst+1);
+Kdata = zeros(ab,11);
 for j = 1:ab
     for i = 1:a
         strn = dataN(j).store(i);
@@ -64,7 +64,7 @@ end
 figure(1)
 scatter(Kdata(:,1),Kdata(:,end-1),"k*")
 hold on
-scatter(Kdata(:,1),Kdata(:,end),"k*")
+scatter(Kdata(:,1),Kdata(:,end),"ro")
 xlabel("K value")
 ylabel("Residual")
 nam = strrep(kneeName, ' ', '')+"_HPC_obj_K.mat";
