@@ -3,7 +3,7 @@
 clear,clc,close all
 kneeName = "Knee 4";
 Obj = myFunctions().collectkneeDetails(kneeName);
-basePath = "E:\\Optimisation - Thesis studies\\%s";
+basePath = "E:\\UOL_Knee 4\\%s";
 path = sprintf(basePath,kneeName);
 % path = fullfile(path,"workspace");
 folders = Obj.findFiles(path);
@@ -18,7 +18,7 @@ for K=0:1:Kconst
     if ~isempty(dataN(1).data)
         const = dataN(1).data;
     end
-    parfor i = 1:ba  %% Change to parfor
+    for i = 1:ba  %% Change to parfor
         Obj = myFunctions().collectkneeDetails(kneeName);
         Obj = Obj.optimisationControl();
         workspacePath = folders(1,i);

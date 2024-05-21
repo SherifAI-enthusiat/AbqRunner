@@ -30,10 +30,13 @@ def findFiles(path):
     files1 = glob.glob(path+"\\runDir\\workspace_*\\TestJob-2.inp")
     files2 = glob.glob(path+"\\workspace\\temp-*\\TestJob-2.inp")
     totfiles = files1 + files2
-    for file in totfiles:
-        resultsFolder = os.path.dirname(file) +"\\Results"
-        if os.path.isfile(file) and os.path.isdir(resultsFolder):
-            tmpPath.append(os.path.dirname(file))
+    for InPfile in totfiles:
+        resultsFolder = os.path.dirname(InPfile) +"\\Results"
+        if os.path.isdir(resultsFolder):
+            for file in os.walk(resultsFolder):
+                if len(file[2]) ==4 and os.path.isfile(InPfile):
+                    tmpPath.append(os.path.dirname(file[0]))
+                break
     # for root, _, files in os.walk(path):
     #     for filename in files:
     #         if filename.endswith("latEpiCoordData.txt"):
