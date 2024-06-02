@@ -94,10 +94,10 @@ def getnodeSet(myOdb,surf):
     return subset, newset
 
 def RetrieveData(workspacePath):
-    odbToolbox = os.path.join(absPath,"postProTools")
-    # medCoordPath = os.path.join(absPath,"MatlabOutput\Knee 2\medCoordData.txt")
-    # latCoordPath = os.path.join(absPath,"MatlabOutput\Knee 2\latCoordData.txt")
     workspacePath = workspacePath.strip('"')
+    odbToolbox = os.path.join(absPath,"postProTools")
+    medCoordPath = os.path.join(workspacePath,"Results\medCoordData.txt")
+    latCoordPath = os.path.join(workspacePath,"Results\latCoordData.txt")
     medEpiCoordPath = os.path.join(workspacePath,"Results\medEpiCoordData.txt")
     latEpiCoordPath = os.path.join(workspacePath,"Results\latEpiCoordData.txt")
     medDisplPath = os.path.join(workspacePath,"Results\medDisplData.txt")
@@ -122,13 +122,13 @@ def RetrieveData(workspacePath):
     menSurf =['MEDSURF','LATSURF','LATEPICONDYLE','MEDEPICONDYLE']
     menNew = ['MEDEPICONDYLE','LATEPICONDYLE']
     # Undeformed Coordinates to file - Check to see of the file exists first before writing
-    # if not os.path.exists(medCoordPath):
-    #     for itm in menSurf:
-    #         subsetHandle,set = getnodeSet(myOdb,itm)
-    #         if set.endswith('MEDSURF'):
-    #             undeformedCoordData(subsetHandle,medCoordPath)
-    #         elif set.endswith('LATSURF'):
-    #             undeformedCoordData(subsetHandle,latCoordPath)
+    # if not os.path.isfile(medCoordPath):
+    for itm in menSurf:
+        subsetHandle,set = getnodeSet(myOdb,itm)
+        if set.endswith('MEDSURF'):
+            undeformedCoordData(subsetHandle,medCoordPath)
+        elif set.endswith('LATSURF'):
+            undeformedCoordData(subsetHandle,latCoordPath)
     for itm in menNew: 
         subsetHandle,set = getnodeSet(myOdb,itm)
         if set.endswith('MEDEPICONDYLE'):
