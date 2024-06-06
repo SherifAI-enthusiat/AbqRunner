@@ -42,7 +42,12 @@ for K=0:1:Kconst
         % tibialFeatures = obj.tibiaFeatures;
         [Res_Tot,Res_Men] = Obj.errorfunc(dataCell);
         params = Obj.findParameters(workspacePath);
-        stn = params + ','+string(Res_Tot) +','+string(Res_Men);
+        try
+            stn = params + ','+string(Res_Tot) +','+string(Res_Men);
+        catch
+            params = sring(zeros(1,8));
+            stn = params + ','+string(Res_Tot) +','+string(Res_Men);
+        end
         % stn = string(i) + ','+string(Residual);
         store(i) = {string(stn)};
     end
