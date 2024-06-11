@@ -19,6 +19,7 @@ for K=0:1:Kconst
     if ~isempty(dataN(1).data)
         const = dataN(1).data;
     end
+    parfor_progress(ba)
     parfor i = 1:ba  %% Change to parfor
         Obj = myFunctions().collectkneeDetails(kneeName);
         Obj = Obj.optimisationControl(controlWeights);
@@ -50,7 +51,9 @@ for K=0:1:Kconst
         end
         % stn = string(i) + ','+string(Residual);
         store(i) = {string(stn)};
+        parfor_progress;
     end
+    parfor_progress(0)
     ab = ab + 1;
     dataN(ab).store = store;
     dataN(ab).data = data;
@@ -88,3 +91,26 @@ save(savePath)
 % %     temp2 = sum(tempB.^2,'all'); % To check -----
 % %     result = temp1 + temp2; % Up
 % % end
+
+%%
+% % Define the total number of steps
+% total_steps = 100;
+% 
+% % Initialize the waitbar with a message and optional title
+% h = waitbar(0, 'Progress...');
+% 
+% % Loop through your steps
+% for i = 1:total_steps
+%   % Perform some work here (replace with your actual code)
+%   pause(0.1);  % Simulate some work
+% 
+%   % Update the progress bar
+%   progress = i / total_steps;
+%   waitbar(progress, h);
+% end
+% 
+% % Close the waitbar when finished
+% close(h);
+% 
+% disp('Progress complete!');
+
