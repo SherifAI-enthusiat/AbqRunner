@@ -3,7 +3,7 @@
 clear,clc,close all
 kneeName = "Knee 5";
 Obj = myFunctions().collectkneeDetails(kneeName);
-basePath = "E:\\Optimisation - Thesis studies\\%s"; % E:\Optimisation - Thesis studies\Knee 5
+basePath = "D:\\Optimisation - Thesis studies\\%s"; % E:\Optimisation - Thesis studies\Knee 5
 path = sprintf(basePath,kneeName);
 % path = fullfile(path,"workspace");
 folders = Obj.findFiles(path);

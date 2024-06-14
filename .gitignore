@@ -6,3 +6,5 @@ __pycache__
 debugReport.ascii
 *.asv
 MatlabOutput/Knee */Knee*_HPC_obj_K*.mat
+tryStorage/
+parfor_progress.txt

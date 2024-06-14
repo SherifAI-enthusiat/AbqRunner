@@ -446,7 +446,7 @@ classdef myFunctions
             obj.path =  "MatlabOutput\Knee 5";
             obj.mnmx = true; % This is the case where the SI is pointing downs instead of upwards hence causes issues in code.
         end
-        % py.importlib.import_module('HelperFunc');
+        py.importlib.import_module('HelperFunc');
         % val = py.HelperFunc.checkInpfile(kneeName);
         % try
         %     py.HelperFunc.initialise();
