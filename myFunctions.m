@@ -12,15 +12,15 @@ classdef myFunctions
         pixelConv; % This is data from ScanIP i.e. convertion factor from pixel to length(mm).
         path; % Path to experimental data stored.
         mnmx; % this is pretty much just for knee 5 - where SI points downwards.All the other cases are fine
-        weights;
-        expData;
-        tibiaFeatures;
-        avgheight; % this quantity is used to store some height value from Move step.
-        mVal_lVal; % Used to adjust experimental tibial movement data in error function(Pareto front).
-        error_Value = [];
-        K_value = 0;
-        testPath ;
-        test = "False"
+        weights; % This will be a means to control the what nodes the optimiser focuses on. {Follows 1st optimisation of all knees}. The default is none provided is ones
+        expData; % These are the experimental measurement data
+        tibiaFeatures; % These are the medial and lateral feature locations data obtained from ScanIP
+        avgheight; % This quantity is used to store the average height moved
+        mVal_lVal; % Used to adjust experimental tibial movement data in error function
+		K_value = 0; % This is used control the weighting of tibia contribution.
+		error_Value = []; % I am going to store the error function value here to allow for interpretation
+        test = "False"; % This allows me to test my code and prevent initialisation.
+        testPath; % This is the test path.
     end 
 
     methods
@@ -28,13 +28,13 @@ classdef myFunctions
         function [outputn] = myscript(obj,x)
         % This function evaluates in Abaqus and returns a variable "count" which is
         % used to locate the results file.
-            vp = .01; vf_p = .01;
+            vp = .01; vf_p = .01; par = x;
             Gp = x(1)/(2*(1+vp)); % Gp
             x = [x(1),x(1),x(2),vp,vf_p,vf_p,Gp,x(3),x(3)];
         %     scalarM = 100.*ones(size(expData));
             ff = fullfile(obj.path,{'expData.mat'});
             load(string(ff(1)));  
-            if py.ParamTools.material_stability(x)
+             if py.ParamTools.material_stability(x)
                 formatSpec = 'lstestv2_parallel.py %d %d %d %d %d %d %d %d %d "%s"';%% This is where I can change bits.
                 cmd = sprintf(formatSpec,x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),obj.path); % 
                 if obj.test == "True"
@@ -46,18 +46,18 @@ classdef myFunctions
                     [FE_dat,FE_tibiaF,obj] = obj.measureMenisci(workspacePath);
 					% data.dat = dat; data.tibiaF = tibiaF;
                     dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.avgheight,obj.axes(1),obj.weights,obj.K_value};
-                catch
+                catch ShowError
                     FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
 					% data.dat = dat; data.tibiaF = tibiaF;
-                    dataCell = {FE_dat,obj.expData,FE_tibiaF,obj.tibiaFeatures,obj.avgheight,obj.axes(1),obj.weights,obj.K_value};
+                    dataCell = {FE_dat,expData,FE_tibiaF,tibiaFeatures,[0,0],obj.axes(1),obj.weights,obj.K_value};
                 end
             else
 				FE_dat = zeros(4,12); FE_tibiaF = zeros(8,3);
 				% data.dat = dat; data.tibiaF = tibiaF;
-                dataCell = {FE_dat,expData,FE_tibiaF,tibiaFeatures,0,obj.axes(1),obj.weights,obj.K_value};
+                dataCell = {FE_dat,expData,FE_tibiaF,tibiaFeatures,[0,0],obj.axes(1),obj.weights,obj.K_value};
             end
-            [outputn,menContribution] = obj.errorfunc(dataCell);
-			resid = [menContribution,outputn]; % Menisci and tibial contributions
+            [outputn,menContribution,obj] = obj.errorfunc(dataCell);
+			resid = [par,menContribution,outputn]; % Menisci and tibial contributions - this feature to store output is not working.
 			obj.error_Value = vertcat(obj.error_Value,resid);
         end
         %% This function handles the secondary aspect of the optimisation
@@ -77,12 +77,12 @@ classdef myFunctions
             med_men = readmatrix(string(fp_coords(1)));lat_men = readmatrix(string(fp_coords(2)));
             med_men_displ = readmatrix(string(fp_disp(1)));lat_men_displ = readmatrix(string(fp_disp(2)));
             medEpiCoord = readmatrix(string(fp_disp(3)));latEpiCoord = readmatrix(string(fp_disp(4)));
+            load(string(fp_coords(3)));
             % Undeformed data - Move step is applied to bring it to the undeformed technically. 
             % Since Abaqus has issues with surfaces in contact. So i have to rearrange the data into four load steps and added the Move step load case to coord data.
             %% This piece of code determines the axis on which the menisci lies - {Doesnt work consistently for all samples hence I decided to ignore it}
             % Obj = myFunctions();
-            load(string(fp_coords(3)));
-            obj.expData = expData;
+			obj.expData = expData;
             obj.tibiaFeatures = tibiaFeatures;
             obj.oriCoords = vertcat(med_men,lat_men);
             obj.med_men_length = size(med_men,1); 
@@ -93,7 +93,7 @@ classdef myFunctions
             %% This piece of code determines the location of the menisci points for measurements.
             tibiaEpiCoords = obj.calcTibiaFeatures(medEpiCoord,latEpiCoord);% Calcs coordinate data for tibial features for the different load states. 
             tibiaData = [tibiaEpiCoords.med;tibiaEpiCoords.lat];
-            [Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,obj.axes,displ);
+			[Points2Measure,obj.revCentres] = obj.PointsAroundMenisci(tibiaEpiCoords,planeHeight,obj.axes,displ);
             %% I am here - Need to verify that points around the menisci are at the right location.
             % relative to surface from Abaqus. i then need to check resultant coords and measure points.
             %% FindPointsInCylinder function
@@ -107,7 +107,7 @@ classdef myFunctions
             % end
         end
         %% Cost function for optimisation
-        function [result,temp1] = errorfunc(obj,data)
+        function [result,temp1,obj] = errorfunc(obj,data)
             trans_Tibia = [data{5}(1).*ones(4,3);data{5}(1).*ones(4,3)]; % Used to translate only along tibia loading axis
             tibialFeatures = data{4}+trans_Tibia; % This is meant to be a correction for the tibial movements - due to FE modelling. 
 			tempA = 100*(data{1}-data{2})./data{2}; % .*scalarM TO DO need to check dimensions here.
@@ -125,6 +125,9 @@ classdef myFunctions
             end
             obj.parameters = parameters;
             obj.sfM = sfM;
+        end
+        function [error_Value] = updateErrorValue(obj)
+            errorValue = obj.error_Value;
         end
         %% Generating point to build cylinder
         function symmetric_ang = generatePoints(obj,startAng, noPoints)
@@ -289,7 +292,7 @@ classdef myFunctions
     %     [~,AP_Dir] = max(valA);
     % end
     
-    function [tibiaEpiCoords] = calcTibiaFeatures(obj,medCoords,latCoords) %% - Done
+    function [tibiaEpiCoords] = calcTibiaFeatures(obj,medCoords,latCoords) %% - Done - These are Abaqus (FE) tibial coords
         for i = 1:size(medCoords,1)-1
             tibiaEpiCoords.med(i,:) = medCoords(1,:) + medCoords(i+1,:);
             tibiaEpiCoords.lat(i,:) = latCoords(1,:) + latCoords(i+1,:);
@@ -310,7 +313,7 @@ classdef myFunctions
         tes = obj.generatePoints(70,6); % these are defined constants in ScanIP
         Points2Measure = struct();
         SI_Dir = axes(1); AP_Dir = axes(2);
-        [~,obj] = obj.ResultantCoordinates(displacements);
+        [~,obj] =obj.ResultantCoordinates(displacements);
         for it = 1:a
             % I will use newCentre to calc locations around the periphery of the menisci. The newcentre is calc based on two operations
             % 1. Using the direction vector based on tibial features 2. Modifying location using original tibia centres and translating by some amount.
@@ -337,7 +340,7 @@ classdef myFunctions
                 end
             end
             % I make measurements on some given plane which corresponds to the planeHeight variable.
-            constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight;% this is to correct for the issue of modelling in Abaqus
+            constHeight = obj.pixelConv*planeHeight(it)+obj.avgheight; % this is to correct for the issue of modelling in Abaqus - Need to verify
             newcoord(:,SI_Dir)= constHeight; % this ".293" is the pixel resolution to convert to pixel height.
             newCentre(it).med(1,SI_Dir) = constHeight; 
             newCentre(it).lat(1,SI_Dir) = constHeight;
@@ -346,7 +349,8 @@ classdef myFunctions
     end
 
     function [defCoords,obj] = ResultantCoordinates(obj,displacements)
-        % This function finds the deformed coordinate given coordinates from the assembly in Abaqus.  
+        % This function finds the deformed coordinate given coordinates from the assembly in Abaqus. 
+        % Checked 14/08/2024 - How the displacement coordinates are calculated. Abaqus makes reference to the Assembly for all load cases. 
         a = obj.med_men_length;
         med_men = obj.oriCoords(1:a,:); lat_men = obj.oriCoords(a+1:end,:); % These are the coordinates of the medial and lateral menisci
         med_men_displ = displacements(1:a*4,:); lat_men_displ = displacements((a*4)+1:end,:); % This data is composed of 4 steps {Move,Load1, Load2 and load3} 
@@ -356,8 +360,13 @@ classdef myFunctions
         obj.mVal_lVal = [mVal,lVal]; %% Correction - calc
         obj.avgheight = ( mVal + lVal )/2; %% Correction - calc Average of movement in the meniscus
         for it =1:4
-            defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
-            defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
+            try
+                defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
+                defCoords(it).lat = lat_men + lat_men_displ(ltB(it):b*it,:);
+            catch
+                defCoords(it).med = med_men;
+                defCoords(it).lat = lat_men;
+            end
         end
         obj.defCoords = defCoords;
         % This is a structure with each row corresponding to the load step{Move, Load1, Load2,Load3}
@@ -395,14 +404,8 @@ classdef myFunctions
                             point = mean(IntData,1);
                         end
                     else
+                        point = mean(IntData,1); %[Solve for t == Con_X] this is the case where there is not enough data for data fitting.
                         pltM = "rs"; % These are approximate solutions.
-                        if isempty(IntData)
-                            parameters(7) = 2.5; % Increase the radius to try and capture more points.
-                            [IntData,cyl_mod] = obj.cylinderIntersect(parameters,data);
-                            point = mean(IntData,1);
-                        else
-                            point = mean(IntData,1); %[Solve for t == Con_X] this is the case where there is not enough data for data fitting.
-                        end
                     end
                     measuredCoords = [measuredCoords;point];
                     boolCoords = [boolCoords;pltM];
@@ -431,16 +434,16 @@ classdef myFunctions
     end
 
     function [obj] = collectkneeDetails(obj,kneeName)
-        test = upper(kneeName); obj.mnmx = false;
-        if test == "KNEE 2"
+        name = upper(kneeName); obj.mnmx = false;
+        if name == "KNEE 2"
             obj.axes = [3,2];
             obj.pixelConv = .15;
             obj.path = "MatlabOutput\Knee 2";
-        elseif test == "KNEE 4"
+        elseif name == "KNEE 4"
             obj.axes = [3,2];
             obj.pixelConv = .293;
             obj.path =  "MatlabOutput\Knee 4";
-        elseif test == "KNEE 5"
+        elseif name == "KNEE 5"
             obj.axes = [2,3];
             obj.pixelConv = .293;
             obj.path =  "MatlabOutput\Knee 5";
@@ -448,15 +451,17 @@ classdef myFunctions
         end
         py.importlib.import_module('HelperFunc');
         % val = py.HelperFunc.checkInpfile(kneeName);
-        % try
+        % if obj.test == "False" % This will allow me to test stuff.
         %     py.HelperFunc.initialise();
-        % catch
+        % else
+        %     obj.testPath = py.HelperFunc.testPath();
         % end
         % if val == 0
-        %     error("Ensure the right Abaqus file i.e .inp file is in the root directory")
+        %     error(['Ensure the right Abaqus file i.e .inp file is in the root directory' ...
+        %         '(Check .inp file for the line "** Job name: TestJob-2 Model name: PCKnee2)" Model name needs to be equal to kneeName'])
         % end
     end
-
+    
     function [data] = findFiles(obj,path)
         data = py.HelperFunc.findFiles(path);
     end
@@ -470,7 +475,7 @@ classdef myFunctions
         obj.defCoords =[];
         obj.oriCoords =[];
     end
-    
+
     function [obj] = optimisationControl(obj,Scalar_weights)
         if exist("Scalar_weights",'var') && sum(Scalar_weights,"all")~=0
             obj.weights = Scalar_weights;

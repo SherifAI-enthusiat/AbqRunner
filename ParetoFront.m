@@ -1,7 +1,7 @@
 %% Determining the distribution of menisci tissue property coefficient.
 % This code will be used to determine the distribution of the material property parameters of the menisci
 clear,clc,close all
-kneeName = "Knee 5";
+kneeName = "Knee 2";
 Obj = myFunctions().collectkneeDetails(kneeName);
 basePath = "D:\\Optimisation - Thesis studies\\%s"; % E:\Optimisation - Thesis studies\Knee 5
 path = sprintf(basePath,kneeName);
@@ -38,7 +38,7 @@ for K=0:1:Kconst
         else % for any other steps, data that was stored in the first step is used to calc the residuals.
             FE_dat = const(i).FE_dat; FE_tibiaF = const(i).FE_tibiaF;
             Obj= const(i).Obj; %defn = [Obj.mVal_lVal,Obj.axes(1)];
-            dataCell = {FE_dat,Obj.expData,FE_tibiaF,Obj.tibiaFeatures,Obj.avgheight,Obj.axes(1),Obj.weights,Obj.K_value};
+            dataCell = {FE_dat,Obj.expData,FE_tibiaF,Obj.tibiaFeatures,Obj.avgheight,Obj.axes(1),Obj.weights,K};
         end
         % tibialFeatures = obj.tibiaFeatures;
         [Res_Tot,Res_Men] = Obj.errorfunc(dataCell);
@@ -46,7 +46,7 @@ for K=0:1:Kconst
         try
             stn = params + ','+string(Res_Tot) +','+string(Res_Men);
         catch
-            params = sring(zeros(1,8));
+            params = string(zeros(1,8));
             stn = params + ','+string(Res_Tot) +','+string(Res_Men);
         end
         % stn = string(i) + ','+string(Residual);
@@ -62,13 +62,21 @@ end
 a = size(store,2);
 tmp = zeros(a,10);
 Kdata = zeros(ab,11);
+count = [];
 for j = 1:ab
     for i = 1:a
         strn = dataN(j).store(i);
-        tmp(i,:) = str2num(strn{1});
+        try
+            tmp(i,:) = str2num(strn{1});
+        catch
+            count = [count,i];
+            continue
+        end
     end
-    [~,mnind] = min(tmp(:,9));
-    Kdata(j,:) = [j,tmp(mnind,:)];
+    ntmp = tmp(:,1)~=0;
+    filtmp = tmp(ntmp,:);
+    [~,mnind] = min(filtmp(:,9));
+    Kdata(j,:) = [j,filtmp(mnind,:)];
 end
 figure(1)
 scatter(Kdata(:,1),Kdata(:,end-1),"k*")
