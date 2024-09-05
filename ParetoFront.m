@@ -76,7 +76,9 @@ for j = 1:ab
     ntmp = tmp(:,1)~=0;
     filtmp = tmp(ntmp,:);
     [~,mnind] = min(filtmp(:,9));
+    [~,mxind] = max(filtmp(:,9));
     Kdata(j,:) = [j,filtmp(mnind,:)];
+    Kdata_max(j,:) = [j,filtmp(mxind,:)];
 end
 figure(1)
 scatter(Kdata(:,1),Kdata(:,end-1),"k*")
