@@ -62,6 +62,7 @@ end
 a = size(store,2);
 tmp = zeros(a,10);
 Kdata = zeros(ab,11);
+Kdata_max = zeros(ab,11);
 count = [];
 for j = 1:ab
     for i = 1:a
@@ -123,4 +124,3 @@ save(savePath)
 % close(h);
 % 
 % disp('Progress complete!');
-

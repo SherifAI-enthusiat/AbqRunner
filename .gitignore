@@ -8,3 +8,4 @@ debugReport.ascii
 MatlabOutput/Knee */Knee*_HPC_obj_K*.mat
 tryStorage/
 parfor_progress.txt
+runDir

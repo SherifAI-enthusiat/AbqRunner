@@ -37,7 +37,7 @@
 #             break
 #     return coef
 
-# Directory = "E:\Optimisation - Thesis studies\Knee 5"
+# Directory = "E:\Optimisation - Thesis studies\Knee 2"
 # findFiles = glob.glob(Directory + "\Validation\workspace_*\*.inp")
 # tmp = []
 # for ind,val in enumerate(findFiles):
@@ -64,6 +64,19 @@
 # # orifile = "TestJob-2.inp"
 # # workspacePath = "MatlabOutput"
 # # w2p.writeInp(x,orifile,workspacePath,orifile)
+
+import subprocess as sbp
+import os
+# os.chdir(r"C:\\Users\\mnsaz\\Desktop\\Test")
+Path = "C:\\WorkThings\\AbqRunner\\runDir\\FlexionJobs"
+inpPath = "C:\\WorkThings\\AbqRunner\\Final_Inp.inp"
+jobNum = "Confirmation"
+cwdir = os.path.join(Path,jobNum)
+os.mkdir(cwdir)
+os.chdir(cwdir)
+cmd = r'abaqus memory=20000mb job=%s input="%s" cpus=4'%(jobNum,inpPath)
+sbp.run(cmd,stdout=sbp.PIPE,shell=True,creationflags=sbp.CREATE_NEW_PROCESS_GROUP)
+
 
 import numpy as np
 # Original coordinates
