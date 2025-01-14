@@ -461,7 +461,7 @@ classdef myFunctions
         %         '(Check .inp file for the line "** Job name: TestJob-2 Model name: PCKnee2)" Model name needs to be equal to kneeName'])
         % end
     end
-    
+
     function [data] = findFiles(obj,path)
         data = py.HelperFunc.findFiles(path);
     end

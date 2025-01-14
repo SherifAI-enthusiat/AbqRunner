@@ -1,9 +1,10 @@
 %% Determining the distribution of menisci tissue property coefficient.
 % This code will be used to determine the distribution of the material property parameters of the menisci
 clear,clc,close all
-kneeName = "Knee 2";
+kneeName = "Knee 5";
 Obj = myFunctions().collectkneeDetails(kneeName);
 basePath = "D:\\Optimisation - Thesis studies\\%s"; % E:\Optimisation - Thesis studies\Knee 5
+% path = "D:\github\Abaqus_FE_Optim";
 path = sprintf(basePath,kneeName);
 % path = fullfile(path,"workspace");
 folders = Obj.findFiles(path);
@@ -87,9 +88,9 @@ hold on
 scatter(Kdata(:,1),Kdata(:,end),"ro")
 xlabel("K value")
 ylabel("Residual")
-nam = strrep(kneeName, ' ', '')+"_HPC_obj_K.mat";
-savePath = fullfile(Obj.path,nam);
-save(savePath)
+% nam = strrep(kneeName, ' ', '')+"_HPC_obj_K.mat";
+% savePath = fullfile(Obj.path,nam);
+% save(savePath)
 % % % Error function
 % % function result = errorfuncA(data)
 % %     trans_Tibia = [data{5}(1).*ones(4,3);data{5}(2).*ones(4,3)]; % Used to translate only along tibia loading axis
