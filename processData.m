@@ -1,13 +1,14 @@
 %% Determining the distribution of menisci tissue property coefficient.
 % This code will be used to determine the distribution of the material property parameters of the menisci
 clear,clc
-Obj = myFunctions().collectkneeDetails("Knee 2");
-folders = Obj.findFiles("D:\Optimisation - Thesis studies\Knee 2");
+kneeName = "Knee 5";
+Obj = myFunctions().collectkneeDetails(kneeName);
+folders = Obj.findFiles("E:\\Optimisation - Thesis studies\MeniscusThesis\\Knee 5");
 folders = string(folders);
 load(fullfile(Obj.path,"expData.mat"));
 store = {}; ba = size(folders,2); 
-parfor i = 1:ba
-    Obj = myFunctions().collectkneeDetails("Knee 2");
+for i = 1:ba
+    Obj = myFunctions().collectkneeDetails(kneeName);
     workspacePath = folders(1,i);
         try
             [dat,tibiaF,Obj] = Obj.measureMenisci(workspacePath);

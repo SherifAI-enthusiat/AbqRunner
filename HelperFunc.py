@@ -27,7 +27,7 @@ def findFiles(path):
     #     path = os.path.dirname(itm)
     #     tmpPath.append(path)
     # return tmpPath
-    files1 = glob.glob(path+"\\runDir\\workspace_*\\TestJob-2.inp")
+    files1 = glob.glob(path+"\\workspace_*\\TestJob-2.inp")
     files2 = glob.glob(path+"\\workspace\\temp-*\\TestJob-2.inp")
     totfiles = files1 + files2
     for InPfile in totfiles:

@@ -16,6 +16,7 @@ classdef myFunctions
         expData; % These are the experimental measurement data
         tibiaFeatures; % These are the medial and lateral feature locations data obtained from ScanIP
         avgheight; % This quantity is used to store the average height moved
+        avgBool = 0;% i am using this to switch on or off the average height movement
         mVal_lVal; % Used to adjust experimental tibial movement data in error function
 		K_value = 0; % This is used control the weighting of tibia contribution.
 		error_Value = []; % I am going to store the error function value here to allow for interpretation
@@ -358,7 +359,12 @@ classdef myFunctions
         b = b/4;  ltA = [1,a+1,2*a+1,3*a+1]; ltB = [1,b+1,2*b+1,3*b+1];
         mVal = mean(med_men_displ(1:a,obj.axes(1))); lVal = mean(lat_men_displ(1:b,obj.axes(1)));
         obj.mVal_lVal = [mVal,lVal]; %% Correction - calc
-        obj.avgheight = ( mVal + lVal )/2; %% Correction - calc Average of movement in the meniscus
+        if obj.avgBool == 1
+            obj.avgheight = ( mVal + lVal )/2; %% Correction - calc Average of movement in the meniscus
+        else
+            obj.avgheight = 0; % This is the case where the average height is not used.
+        end
+        
         for it =1:4
             try
                 defCoords(it).med = med_men + med_men_displ(ltA(it):a*it,:);
